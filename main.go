@@ -1,41 +1,35 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"net/http"
-	"os"
-
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
-func main() {
+func server1() {
 
-	e := echo.New()
+    fmt.Println("server 1 is running")
 
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-
-	e.GET("/", func(c echo.Context) error {
-		return c.HTML(http.StatusOK, "Hello, Docker! <3")
+	http.HandleFunc("/server1", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("This is Server 1"))
 	})
 
-	e.GET("/health", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, struct{ Status string }{Status: "OK"})
-	})
-
-	httpPort := os.Getenv("PORT")
-	if httpPort == "" {
-		httpPort = "8085"
-	}
-
-	e.Logger.Fatal(e.Start(":" + httpPort))
+	log.Fatal(http.ListenAndServe(":8082", nil))
 }
 
-// Simple implementation of an integer minimum
-// Adapted from: https://gobyexample.com/testing-and-benchmarking
-func IntMin(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
+func server2() {
+    fmt.Println("server 2 is running")
+
+	http.HandleFunc("/server2", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("This is Server 2"))
+	})
+
+	log.Fatal(http.ListenAndServe(":8083", nil))
+}
+
+func main() {
+	go server1()
+	go server2()
+
+	select {}
 }
